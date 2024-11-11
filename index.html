@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wgo</title>
+    <title>wga</title>
 </head>
+
 <body>
+    <div>
+        <span>You:</span>
+        <span id="num">0</span>
+        <button id="inc-me" type="button">+</button>
+        <button id="dec-me" type="button">-</button>
+    </div>
 </body>
+
+<script>
+    const ws = new WebSocket("ws://127.0.0.1:8080/update-player");
+
+    ws.addEventListener("message", function(event) {
+        document.querySelector('#num').innerText = event.data;
+    });
+
+    document.querySelector('#inc-me').addEventListener('click', function() {
+        ws.send("+1");
+    });
+
+    document.querySelector('#dec-me').addEventListener('click', function() {
+        ws.send("-1");
+    });
+</script>
+
 </html>
