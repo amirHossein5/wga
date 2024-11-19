@@ -1,4 +1,5 @@
-const ws = new WebSocket('ws://127.0.0.1:8080/update-player');
+const currUrl = window.location.hostname;
+const ws = new WebSocket(`ws://${currUrl}:8080/update-player`);
 
 const connecting = document.querySelector('#connecting');
 const playgroundCanvas = document.querySelector('#playground');
