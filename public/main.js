@@ -29,10 +29,10 @@ function drawPlayer(player, isCurrentPlayer) {
     if (isCurrentPlayer) {
         // playgroundContext.strokeStyle = 'red';
         // playgroundContext.lineWidth = '2';
-        // playgroundContext.rect(player['position_x'], player['position_y'], 40, 40);
+        // playgroundContext.rect(player['position_x'], player['position_y'], 50, 50);
     }
 
-    playgroundContext.fillRect(player['position_x'], player['position_y'], 40, 40);
+    playgroundContext.fillRect(player['position_x'], player['position_y'], 50, 50);
 
     // playgroundContext.fill();
     // if (isCurrentPlayer) playgroundContext.stroke();
