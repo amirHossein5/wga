@@ -85,8 +85,6 @@ func (game *Game) updatePlayer(ws *websocket.Conn) {
 		}
 
 		player.Num += int
-
-		ws.Write([]byte(strconv.Itoa(player.Num)))
 	}
 }
 
