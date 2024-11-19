@@ -54,7 +54,7 @@ document.querySelector('button.to-left').addEventListener('click', moveToLeft);
 document.querySelector('button.to-top').addEventListener('click', moveToTop);
 document.querySelector('button.to-down').addEventListener('click', moveToDown);
 
-document.onkeydown = function(e) {
+document.onkeydown = function (e) {
     if (e.key === 'ArrowRight') {
         moveToRight();
     } else if (e.key === 'ArrowLeft') {
@@ -64,7 +64,7 @@ document.onkeydown = function(e) {
     } else if (e.key === 'ArrowDown') {
         moveToDown();
     }
-}
+};
 
 function moveToRight() {
     ws.send('to-right');
