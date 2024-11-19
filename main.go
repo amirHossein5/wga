@@ -5,29 +5,62 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
+	"slices"
 
+	"github.com/amirhossein5/wgo/pkg/rand"
 	"github.com/google/uuid"
 	"golang.org/x/net/websocket"
 )
 
 type Player struct {
-	ID   uuid.UUID `json:"id"`
-	Num  int       `json:"num"`
-	Name string    `json:"name"`
-	ws   *websocket.Conn
+	ID        uuid.UUID `json:"id"`
+	PositionY int       `json:"position_y"`
+	PositionX int       `json:"position_x"`
+	Color     string    `json:"color"`
+	ws        *websocket.Conn
 }
 
 type Game struct {
 	players []*Player
 }
 
+const (
+	MOVE_SPEED = 30
+	TO_RIGHT   = "to-right"
+	TO_LEFT    = "to-left"
+	TO_TOP     = "to-top"
+	TO_DOWN    = "to-down"
+)
+
+func (game *Game) IsValidMove(move string) bool {
+	return slices.Contains([]string{TO_RIGHT, TO_LEFT, TO_DOWN, TO_TOP}, move)
+}
+
+func (game *Game) HandleMove(player *Player, move string) error {
+	if !game.IsValidMove(move) {
+		return fmt.Errorf("not a valid move %v\n", move)
+	}
+
+	if move == TO_RIGHT {
+		player.PositionX += MOVE_SPEED
+	} else if move == TO_LEFT {
+		player.PositionX -= MOVE_SPEED
+	} else if move == TO_TOP {
+		player.PositionY -= MOVE_SPEED
+	} else if move == TO_DOWN {
+		player.PositionY += MOVE_SPEED
+	}
+
+	return nil
+}
+
 func (game *Game) AppendPlayer(ws *websocket.Conn) *Player {
 	player := Player{
-		ID:   uuid.New(),
-		Num:  0,
-		Name: fmt.Sprintf("player %d:", len(game.players)),
-		ws:   ws,
+		ID:        uuid.New(),
+		PositionY: 0,
+		PositionX: 0,
+		Color:     rand.HexColor(),
+		ws:        ws,
 	}
 	game.players = append(game.players, &player)
 	return &player
@@ -76,15 +109,11 @@ func (game *Game) updatePlayer(ws *websocket.Conn) {
 			continue
 		}
 
-		msg := string(buf[:n])
-
-		int, err := strconv.Atoi(msg)
+		err = game.HandleMove(player, string(buf[:n]))
 		if err != nil {
-			log.Println(msg, "is not a number")
+			log.Printf("counldn't handle move %v\n", err)
 			continue
 		}
-
-		player.Num += int
 	}
 }
 
@@ -93,6 +122,9 @@ func main() {
 
 	http.HandleFunc("/", indexPage)
 	http.Handle("/update-player", websocket.Handler(game.updatePlayer))
+
+	fs := http.FileServer(http.Dir("./public"))
+	http.Handle("/public/", http.StripPrefix("/public/", fs))
 
 	port := 8080
 	log.Println("starting server in port", port)

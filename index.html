@@ -3,73 +3,31 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wga</title>
 </head>
 
 <body>
     <div id="connecting">connecting...</div>
 
-    <div id="playground"></div>
+    <div style="display:flex; justify-content:center">
+        <canvas
+            id="playground"
+            height="300"
+            width="1300"
+            style="border: 1px solid gray; display:none; width:100%"
+        >your browser does not support canvas</canvas>
+    </div>
 
-    <template>
-        <div class="player-template">
-            <span data-player-name></span>
-            <span data-player-num></span>
-            <button id="inc-me" type="button" style="display:none">+</button>
-            <button id="dec-me" type="button" style="display:none">-</button>
+    <div id="control-buttons" style="display:none; justify-content: center;margin-top:1rem;">
+        <button class="to-left">left</button>
+        <div style="display:flex; flex-direction:column">
+            <button class="to-top">top</button>
+            <button class="to-down">down</button>
         </div>
-    </template>
+        <button class="to-right">right</button>
+    </div>
 </body>
 
-<script>
-    const ws = new WebSocket("ws://127.0.0.1:8080/update-player");
-
-    const connecting = document.querySelector('#connecting');
-    const playground = document.querySelector('#playground');
-    const playerTemplate = document.querySelector('template').content.querySelector('.player-template');
-
-    ws.addEventListener("message", function(event) {
-        const data = JSON.parse(event.data);
-
-        playground.innerHTML = '';
-
-        assert(data instanceof Object, 'data is not an object', data);
-        assert("players" in data, "failed to receieve players", data);
-        assert("current_player" in data, "failed to receieve current_player", data);
-
-        const current_player = data['current_player'];
-
-        data.players.forEach(function(player) {
-            const child = playerTemplate.cloneNode(true);
-
-            child.querySelector('[data-player-name]').innerText = player.name;
-            child.querySelector('[data-player-num]').innerText = player.num;
-            if (player.id === current_player.id) {
-                child.querySelector('#inc-me').style.display = "inline-block"
-                child.querySelector('#dec-me').style.display = "inline-block"
-            }
-
-            child.querySelector('#inc-me').addEventListener('click', function() {
-                ws.send("+1");
-            });
-            child.querySelector('#dec-me').addEventListener('click', function() {
-                ws.send("-1");
-            });
-            playground.appendChild(child);
-        });
-
-        connecting.style.display = "none";
-    });
-</script>
-
-<script>
-    function assert(thurhy, msg, ...data) {
-        if (!thurhy) {
-            console.error(msg, ...data)
-            throw new Error(msg)
-        }
-    }
-</script>
+<script src="public/main.js"></script>
 
 </html>
