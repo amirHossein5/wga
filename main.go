@@ -38,12 +38,12 @@ type GameStateResource struct {
 	CurrentPlayer *Player   `json:"current_player"`
 }
 
-func (game *Game) DispatchUpdate(currentPlayer *Player) {
+func (game *Game) DispatchUpdate() {
 	for _, player := range game.players {
 		go func() {
 			websocket.JSON.Send(player.ws, GameStateResource{
 				Players:       game.players,
-				CurrentPlayer: currentPlayer,
+				CurrentPlayer: player,
 			})
 		}()
 	}
@@ -53,7 +53,7 @@ func (game *Game) updatePlayer(ws *websocket.Conn) {
 	player := game.AppendPlayer(ws)
 
 	for {
-		game.DispatchUpdate(player)
+		game.DispatchUpdate()
 
 		buf := make([]byte, 1024)
 		n, err := ws.Read(buf)
