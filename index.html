@@ -50,18 +50,16 @@
                 child.querySelector('#dec-me').style.display = "inline-block"
             }
 
+            child.querySelector('#inc-me').addEventListener('click', function() {
+                ws.send("+1");
+            });
+            child.querySelector('#dec-me').addEventListener('click', function() {
+                ws.send("-1");
+            });
             playground.appendChild(child);
         });
 
         connecting.style.display = "none";
-
-        document.querySelector('#inc-me').addEventListener('click', function() {
-            ws.send("+1");
-        });
-
-        document.querySelector('#dec-me').addEventListener('click', function() {
-            ws.send("-1");
-        });
     });
 </script>
 
