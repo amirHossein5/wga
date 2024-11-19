@@ -33,6 +33,15 @@ func (game *Game) AppendPlayer(ws *websocket.Conn) *Player {
 	return &player
 }
 
+func (game *Game) RemovePlayer(removePlayer *Player) {
+	for i, player := range game.players {
+		if player.ID == removePlayer.ID {
+			game.players = append(game.players[:i], game.players[i+1:]...)
+			break
+		}
+	}
+}
+
 type GameStateResource struct {
 	Players       []*Player `json:"players"`
 	CurrentPlayer *Player   `json:"current_player"`
@@ -59,6 +68,8 @@ func (game *Game) updatePlayer(ws *websocket.Conn) {
 		n, err := ws.Read(buf)
 		if err != nil {
 			if err == io.EOF {
+				game.RemovePlayer(player)
+				game.DispatchUpdate()
 				break
 			}
 			log.Println("failed to read websocket data", err)
