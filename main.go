@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"time"
 
 	"github.com/amirhossein5/wgo/pkg/rand"
 	"github.com/google/uuid"
@@ -57,8 +58,8 @@ func (game *Game) HandleMove(player *Player, move string) error {
 func (game *Game) AppendPlayer(ws *websocket.Conn) *Player {
 	player := Player{
 		ID:        uuid.New(),
-		PositionY: 0,
-		PositionX: 0,
+		PositionY: 200,
+		PositionX: 500,
 		Color:     rand.HexColor(),
 		ws:        ws,
 	}
@@ -94,7 +95,7 @@ func (game *Game) DispatchUpdate() {
 func (game *Game) updatePlayer(ws *websocket.Conn) {
 	player := game.AppendPlayer(ws)
 
-	for {
+	loop(30, func() bool {
 		game.DispatchUpdate()
 
 		buf := make([]byte, 1024)
@@ -103,18 +104,20 @@ func (game *Game) updatePlayer(ws *websocket.Conn) {
 			if err == io.EOF {
 				game.RemovePlayer(player)
 				game.DispatchUpdate()
-				break
+				return false
 			}
 			log.Println("failed to read websocket data", err)
-			continue
+			return true
 		}
 
 		err = game.HandleMove(player, string(buf[:n]))
 		if err != nil {
 			log.Printf("counldn't handle move %v\n", err)
-			continue
+			return true
 		}
-	}
+
+		return true
+	})
 }
 
 func main() {
@@ -136,4 +139,23 @@ func main() {
 
 func indexPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
+}
+
+func loop(fps int, callback func() bool) {
+	lastFrameTime := time.Now()
+	delayPerFrame := time.Millisecond * time.Duration(1000/fps)
+
+	for {
+		currentTime := time.Now()
+		elapsedTime := currentTime.Sub(lastFrameTime)
+		if elapsedTime >= delayPerFrame {
+			res := callback()
+			if res == false {
+				break
+			}
+			lastFrameTime = currentTime
+		}
+
+		time.Sleep(delayPerFrame - elapsedTime)
+	}
 }
