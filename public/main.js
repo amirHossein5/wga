@@ -6,14 +6,20 @@ const playgroundCanvas = document.querySelector('#playground');
 const playgroundContext = playgroundCanvas.getContext('2d');
 const controlButtons = document.querySelector('#control-buttons');
 
-ws.addEventListener('message', function (event) {
-    const data = JSON.parse(event.data);
+ws.addEventListener('message', function (e) {
+    window.requestAnimationFrame(function () {
+        render(e);
+    });
+});
 
-    clearCanvas();
+function render(event) {
+    const data = JSON.parse(event.data);
 
     assert(data instanceof Object, 'data is not an object', data);
     assert('players' in data, 'failed to receieve players', data);
     assert('current_player' in data, 'failed to receieve current_player', data);
+
+    clearCanvas();
 
     data.players.forEach(function (player) {
         drawPlayer(player, data['current_player'].id === player.id);
@@ -22,8 +28,13 @@ ws.addEventListener('message', function (event) {
     connecting.style.display = 'none';
     playgroundCanvas.style.display = 'block';
     controlButtons.style.display = 'flex';
-});
+}
 
+/**
+ * @param {array} player
+ * @param {boolean} isCurrentPlayer
+ * @returns {void}
+ */
 function drawPlayer(player, isCurrentPlayer) {
     playgroundContext.fillStyle = player['color'];
 
